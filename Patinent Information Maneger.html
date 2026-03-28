@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống quản lý y tế | Đặt lịch khám bệnh</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Login Page */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 32px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            font-size: 2rem;
+            color: #1f6392;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #1f6392;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, #1f6392, #0f4b6e);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Main App */
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: white;
+            border-radius: 28px;
+            padding: 1.2rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            color: #1f6392;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            padding: 0.5rem 1.2rem;
+            border-radius: 25px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.8rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #f8fafd, #f0f4f9);
+            padding: 1.2rem 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #1f6392;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .status-msg {
+            background: #e8f5e9;
+            padding: 0.8rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+
+        .error-msg {
+            background: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+
+        button, .btn {
+            background: #1f6392;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        button:hover {
+            background: #0f4b6e;
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        input, select {
+            padding: 0.6rem 0.9rem;
+            border-radius: 12px;
+            border: 1px solid #ccd7e4;
+            width: 100%;
+            margin-top: 0.3rem;
+            margin-bottom: 0.8rem;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #2c3e50;
+        }
+
+        .doctor-list, .result-list {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        .list-item {
+            padding: 0.8rem;
+            border-bottom: 1px solid #e2edf2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item:hover {
+            background: #f5f9ff;
+        }
+
+        .appointment-card {
+            background: #f9fbfd;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            position: relative;
+        }
+
+        .badge {
+            background: #e1f0fa;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        hr {
+            margin: 1rem 0;
+        }
+
+        .medical-record {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 16px;
+            margin-top: 1rem;
+        }
+
+        .cancel-btn {
+            background: #e74c3c;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            padding: 0.4rem 1rem;
+        }
+
+        .cancel-btn:hover {
+            background: #c0392b;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🏥 Hệ thống Y tế</h1>
+                <p>Đăng nhập để tiếp tục</p>
+            </div>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>👤 Tên đăng nhập</label>
+                    <input type="text" id="username" placeholder="Nhập patient01, patient02..." required>
+                </div>
+                <div class="input-group">
+                    <label>🔑 Mật khẩu</label>
+                    <input type="password" id="password" placeholder="Mật khẩu (123456)" required>
+                </div>
+                <div class="input-group">
+                    <label>👥 Vai trò</label>
+                    <select id="role">
+                        <option value="patient">Bệnh nhân (Patient)</option>
+                        <option value="doctor">Bác sĩ (Doctor)</option>
+                        <option value="manager">Quản lý (Manager)</option>
+                    </select>
+                </div>
+                <button type="submit" class="login-btn">Đăng nhập</button>
+            </form>
+            <div id="loginError" style="margin-top: 1rem; text-align: center; color: #e74c3c;"></div>
+            <div style="margin-top: 1.5rem; padding: 0.8rem; background: #f0f0f0; border-radius: 12px; font-size: 0.8rem;">
+                <strong>🔐 Tài khoản demo:</strong><br>
+                Patient: patient01 / 123456<br>
+                Doctor: dr01 / 123456<br>
+                Manager: admin / 123456
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App (hidden initially) -->
+    <div id="mainApp" style="display: none;">
+        <div class="app-container">
+            <div class="header">
+                <div class="logo">
+                    <h1>🏥 MediFlow Nexus</h1>
+                </div>
+                <div class="user-info">
+                    <span>👋 Xin chào, <strong id="currentUserName"></strong></span>
+                    <button class="logout-btn" onclick="logout()">Đăng xuất</button>
+                </div>
+            </div>
+            <div id="dynamicModules"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== DATABASE ====================
+        const users = {
+            patient01: { password: "123456", role: "patient", name: "Nguyễn Văn A" },
+            patient02: { password: "123456", role: "patient", name: "Trần Thị B" },
+            dr01: { password: "123456", role: "doctor", name: "Bác sĩ Nguyễn" },
+            admin: { password: "123456", role: "manager", name: "Quản lý hệ thống" }
+        };
+
+        // Doctors database
+        const doctorsDB = [
+            { id: "doc1", name: "BS. Nguyễn Minh Tâm", specialty: "Cardiology", fee: 450000, availability: "Thứ 2-6: 8h-17h", rating: 4.8 },
+            { id: "doc2", name: "BS. Lê Hoàng Anh", specialty: "Cardiology", fee: 520000, availability: "Thứ 3,5: 9h-16h", rating: 4.9 },
+            { id: "doc3", name: "BS. Trần Kim Liên", specialty: "Dermatology", fee: 400000, availability: "Thứ 2,4,6: 8h-12h", rating: 4.7 },
+            { id: "doc4", name: "BS. Phạm Quốc Bảo", specialty: "Cardiology", fee: 380000, availability: "Thứ 2,4,6: 13h-17h", rating: 4.6 },
+            { id: "doc5", name: "BS. Hoàng Thị Mai", specialty: "Neurology", fee: 550000, availability: "Thứ 3,5: 8h-16h", rating: 4.9 }
+        ];
+
+        // Appointments
+        let appointments = [
+            { id: "APT001", patientId: "patient01", doctorId: "doc1", doctorName: "BS. Nguyễn Minh Tâm", specialty: "Cardiology", fee: 450000, date: "2026-03-27", timeSlot: "9:00", status: "confirmed", paid: true, createdAt: "2026-03-20" },
+            { id: "APT002", patientId: "patient01", doctorId: "doc2", doctorName: "BS. Lê Hoàng Anh", specialty: "Cardiology", fee: 520000, date: "2026-03-28", timeSlot: "14:00", status: "confirmed", paid: false, createdAt: "2026-03-21" }
+        ];
+
+        // Medical records
+        let medicalRecords = {
+            "patient01": {
+                diagnoses: [
+                    "Tăng huyết áp (I10) - 15/03/2026",
+                    "Viêm họng cấp (J02) - 20/02/2026"
+                ],
+                prescriptions: [
+                    "Paracetamol 500mg - uống khi đau đầu",
+                    "Amoxicillin 250mg - 2 lần/ngày"
+                ],
+                testResults: [
+                    "Công thức máu: Bình thường (25/03/2026)",
+                    "X-quang phổi: Không bất thường (20/03/2026)"
+                ],
+                medicalImages: [
+                    "X-quang ngực - 20/03/2026",
+                    "Siêu âm ổ bụng - 15/03/2026"
+                ]
+            }
+        };
+
+        let currentUser = null;
+
+        // ==================== HELPER FUNCTIONS ====================
+        function showMessage(elementId, message, isError = false) {
+            const msgDiv = document.getElementById(elementId);
+            if (msgDiv) {
+                msgDiv.innerHTML = `<div class="status-msg ${isError ? 'error-msg' : ''}">${message}</div>`;
+                setTimeout(() => {
+                    if (document.getElementById(elementId)) msgDiv.innerHTML = "";
+                }, 4000);
+            }
+        }
+
+        // ==================== THÊM MỚI: HÀM HỦY LỊCH HẸN ====================
+        function cancelAppointment(appointmentId) {
+            const appointmentIndex = appointments.findIndex(ap => ap.id === appointmentId && ap.patientId === currentUser.username);
+            
+            if (appointmentIndex === -1) {
+                return { success: false, message: "Không tìm thấy lịch hẹn!" };
+            }
+            
+            const appointment = appointments[appointmentIndex];
+            
+            // Kiểm tra nếu lịch hẹn đã thanh toán thì không cho hủy
+            if (appointment.paid) {
+                return { success: false, message: "❌ Lịch hẹn đã thanh toán, không thể hủy. Vui lòng liên hệ tổng đài!" };
+            }
+            
+            // Xóa lịch hẹn
+            appointments.splice(appointmentIndex, 1);
+            return { success: true, message: `✅ Đã hủy thành công lịch hẹn với ${appointment.doctorName} vào ngày ${appointment.date} lúc ${appointment.timeSlot}` };
+        }
+
+        // AC1: Search doctor
+        function searchDoctors(specialty, maxFee) {
+            return doctorsDB.filter(doc => doc.specialty === specialty && doc.fee <= maxFee);
+        }
+
+        // AC2: Create appointment
+        function createAppointment(doctor, date, time) {
+            const newApp = {
+                id: "APT" + Date.now(),
+                patientId: currentUser.username,
+                doctorId: doctor.id,
+                doctorName: doctor.name,
+                specialty: doctor.specialty,
+                fee: doctor.fee,
+                date: date,
+                timeSlot: time,
+                status: "confirmed",
+                paid: false,
+                createdAt: new Date().toISOString().split('T')[0]
+            };
+            appointments.push(newApp);
+            return newApp;
+        }
+
+        // AC3: Get medical history
+        function getMedicalHistory(patientId) {
+            return medicalRecords[patientId] || {
+                diagnoses: ["Chưa có dữ liệu"],
+                prescriptions: ["Chưa có dữ liệu"],
+                testResults: ["Chưa có dữ liệu"],
+                medicalImages: ["Chưa có dữ liệu"]
+            };
+        }
+
+        // AC4: Check reminder 24h before
+        function checkReminder() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().slice(0,10);
+            
+            const reminderApp = appointments.find(ap => 
+                ap.patientId === currentUser.username && 
+                ap.date === tomorrowStr
+            );
+            
+            if (reminderApp) {
+                return `🔔 NHẮC NHỞ: Bạn có lịch hẹn với ${reminderApp.doctorName} vào ngày mai lúc ${reminderApp.timeSlot}. Vui lòng đến đúng giờ!`;
+            }
+            return "📅 Không có lịch hẹn trong vòng 24h tới.";
+        }
+
+        // AC5: Process payment
+        function processPayment(amount) {
+            const unpaidAppointment = appointments.find(ap => 
+                ap.patientId === currentUser.username && !ap.paid && ap.status === "confirmed"
+            );
+            if (unpaidAppointment) {
+                unpaidAppointment.paid = true;
+                return { success: true, appointment: unpaidAppointment };
+            }
+            return { success: false };
+        }
+
+        // ==================== PATIENT MODULES ====================
+        function renderPatientModules() {
+            return `
+                <!-- AC1: Tìm kiếm bác sĩ -->
+                <div class="card">
+                    <div class="card-header">🔍 AC1 · Tìm kiếm bác sĩ</div>
+                    <div class="card-body">
+                        <label>🏥 Chuyên khoa</label>
+                        <select id="specialtySelect">
+                            <option value="Cardiology">Tim mạch (Cardiology)</option>
+                            <option value="Dermatology">Da liễu (Dermatology)</option>
+                            <option value="Neurology">Thần kinh (Neurology)</option>
+                        </select>
+                        <label>💰 Phí khám tối đa (VND)</label>
+                        <input type="number" id="maxFeeInput" value="500000">
+                        <button id="searchBtn">🔎 Tìm bác sĩ</button>
+                        <div id="doctorResults" class="doctor-list"></div>
+                        <div id="ac1Msg"></div>
+                    </div>
+                </div>
+
+                <!-- AC2: Đặt lịch khám -->
+                <div class="card">
+                    <div class="card-header">📅 AC2 · Đặt lịch khám</div>
+                    <div class="card-body">
+                        <label>📆 Chọn ngày khám</label>
+                        <input type="date" id="appointmentDate" min="${new Date().toISOString().slice(0,10)}">
+                        <label>⏰ Chọn giờ khám</label>
+                        <select id="appointmentTime">
+                            <option value="8:00">8:00</option>
+                            <option value="9:00">9:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                        </select>
+                        <label>👨‍⚕️ Chọn bác sĩ (từ kết quả tìm kiếm)</label>
+                        <select id="selectedDoctor">
+                            <option value="">-- Chọn bác sĩ --</option>
+                        </select>
+                        <button id="confirmBookingBtn">✅ Xác nhận đặt lịch</button>
+                        <div id="ac2Msg"></div>
+                    </div>
+                </div>
+
+                <!-- AC3: Lịch sử khám bệnh -->
+                <div class="card">
+                    <div class="card-header">📋 AC3 · Lịch sử khám bệnh</div>
+                    <div class="card-body">
+                        <button id="viewHistoryBtn">📖 Xem lịch sử khám bệnh</button>
+                        <div id="medicalHistoryDisplay" class="medical-record"></div>
+                        <div id="ac3Msg"></div>
+                    </div>
+                </div>
+
+                <!-- AC4: Nhắc lịch + AC5: Thanh toán -->
+                <div class="card">
+                    <div class="card-header">⏰ AC4 · Nhắc lịch hẹn & 💳 AC5 · Thanh toán</div>
+                    <div class="card-body">
+                        <button id="checkReminderBtn">🔔 Kiểm tra nhắc lịch (24h)</button>
+                        <div id="reminderDisplay"></div>
+                        <hr>
+                        <div class="appointment-card">
+                            <strong>💰 Thanh toán điện tử (Ví điện tử)</strong>
+                            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Số tiền: 500,000 VND</p>
+                            <button id="paymentBtn">💳 Thanh toán qua ví điện tử</button>
+                        </div>
+                        <div id="paymentMsg"></div>
+                    </div>
+                </div>
+
+                <!-- Danh sách lịch hẹn đã đặt (đã thêm nút hủy) -->
+                <div class="card">
+                    <div class="card-header">📋 Lịch hẹn của tôi</div>
+                    <div class="card-body">
+                        <div id="myAppointments"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==================== THÊM MỚI: HÀM HIỂN THỊ DANH SÁCH LỊCH HẸN CÓ NÚT HỦY ====================
+        function loadMyAppointments() {
+            const myApps = appointments.filter(ap => ap.patientId === currentUser.username);
+            const container = document.getElementById("myAppointments");
+            if (myApps.length === 0) {
+                container.innerHTML = "<p>📭 Chưa có lịch hẹn nào.</p>";
+                return;
+            }
+            container.innerHTML = myApps.map(ap => `
+                <div class="appointment-card" id="appointment-${ap.id}">
+                    <div><strong>👨‍⚕️ Bác sĩ:</strong> ${ap.doctorName}</div>
+                    <div><strong>📅 Ngày:</strong> ${ap.date} lúc ${ap.timeSlot}</div>
+                    <div><strong>💰 Phí:</strong> ${ap.fee.toLocaleString()} VND</div>
+                    <div><strong>💳 Trạng thái:</strong> ${ap.paid ? '✅ Đã thanh toán' : '⏳ Chưa thanh toán'}</div>
+                    ${!ap.paid ? `<button class="cancel-btn" onclick="handleCancelAppointment('${ap.id}')">🗑️ Hủy lịch hẹn</button>` : '<button disabled style="margin-top: 10px; background: #95a5a6;">🔒 Đã thanh toán - Không thể hủy</button>'}
+                </div>
+            `).join("");
+        }
+
+        // ==================== THÊM MỚI: HÀM XỬ LÝ HỦY LỊCH ====================
+        window.handleCancelAppointment = function(appointmentId) {
+            if (confirm("Bạn có chắc chắn muốn hủy lịch hẹn này không?")) {
+                const result = cancelAppointment(appointmentId);
+                if (result.success) {
+                    showMessage("paymentMsg", result.message);
+                    loadMyAppointments(); // Cập nhật lại danh sách
+                } else {
+                    showMessage("paymentMsg", result.message, true);
+                }
+            }
+        };
+
+        function attachPatientEvents() {
+            // Search doctors
+            document.getElementById("searchBtn")?.addEventListener("click", () => {
+                const specialty = document.getElementById("specialtySelect").value;
+                const maxFee = parseInt(document.getElementById("maxFeeInput").value);
+                const results = searchDoctors(specialty, maxFee);
+                const container = document.getElementById("doctorResults");
+                const doctorSelect = document.getElementById("selectedDoctor");
+                
+                if (results.length === 0) {
+                    container.innerHTML = "<div class='list-item'>Không tìm thấy bác sĩ phù hợp</div>";
+                    doctorSelect.innerHTML = '<option value="">-- Không có bác sĩ --</option>';
+                } else {
+                    container.innerHTML = results.map(doc => `
+                        <div class="list-item">
+                            <div>
+                                <strong>${doc.name}</strong><br>
+                                <small>Chuyên khoa: ${doc.specialty} | Phí: ${doc.fee.toLocaleString()} VND</small><br>
+                                <small>Lịch làm việc: ${doc.availability}</small>
+                            </div>
+                            <span class="badge">⭐ ${doc.rating}</span>
+                        </div>
+                    `).join("");
+                    
+                    doctorSelect.innerHTML = '<option value="">-- Chọn bác sĩ --</option>' + 
+                        results.map(doc => `<option value='${JSON.stringify(doc)}'>${doc.name} - ${doc.fee.toLocaleString()} VND</option>`).join("");
+                }
+                showMessage("ac1Msg", `✅ Tìm thấy ${results.length} bác sĩ phù hợp`);
+            });
+
+            // Confirm appointment
+            document.getElementById("confirmBookingBtn")?.addEventListener("click", () => {
+                const doctorStr = document.getElementById("selectedDoctor").value;
+                if (!doctorStr) {
+                    showMessage("ac2Msg", "Vui lòng chọn bác sĩ trước khi đặt lịch", true);
+                    return;
+                }
+                const doctor = JSON.parse(doctorStr);
+                const date = document.getElementById("appointmentDate").value;
+                const time = document.getElementById("appointmentTime").value;
+                
+                if (!date) {
+                    showMessage("ac2Msg", "Vui lòng chọn ngày khám", true);
+                    return;
+                }
+                
+                const newApp = createAppointment(doctor, date, time);
+                showMessage("ac2Msg", `✅ Đặt lịch thành công! Mã: ${newApp.id}. Vui lòng thanh toán để hoàn tất.`);
+                loadMyAppointments();
+            });
+
+            // View medical history
+            document.getElementById("viewHistoryBtn")?.addEventListener("click", () => {
+                const history = getMedicalHistory(currentUser.username);
+                const html = `
+                    <strong>📌 Chẩn đoán:</strong><br>
+                    ${history.diagnoses.map(d => `• ${d}`).join("<br>")}<br><br>
+                    <strong>💊 Toa thuốc:</strong><br>
+                    ${history.prescriptions.map(p => `• ${p}`).join("<br>")}<br><br>
+                    <strong>🧪 Kết quả xét nghiệm:</strong><br>
+                    ${history.testResults.map(t => `• ${t}`).join("<br>")}<br><br>
+                    <strong>🖼 Hình ảnh y khoa:</strong><br>
+                    ${history.medicalImages.map(i => `• ${i}`).join("<br>")}
+                `;
+                document.getElementById("medicalHistoryDisplay").innerHTML = html;
+                showMessage("ac3Msg", "Đã tải lịch sử khám bệnh");
+            });
+
+            // Check reminder
+            document.getElementById("checkReminderBtn")?.addEventListener("click", () => {
+                const reminderMsg = checkReminder();
+                document.getElementById("reminderDisplay").innerHTML = `<div class="status-msg">${reminderMsg}</div>`;
+            });
+
+            // Payment
+            document.getElementById("paymentBtn")?.addEventListener("click", () => {
+                const result = processPayment(500000);
+                if (result.success) {
+                    showMessage("paymentMsg", `💰 Thanh toán thành công! Hệ thống xác nhận: Đã thanh toán ${result.appointment.fee.toLocaleString()} VND cho lịch hẹn với ${result.appointment.doctorName}`);
+                    loadMyAppointments();
+                } else {
+                    showMessage("paymentMsg", "❌ Không tìm thấy lịch hẹn chưa thanh toán. Vui lòng đặt lịch trước.", true);
+                }
+            });
+
+            loadMyAppointments();
+        }
+
+        // ==================== LOGIN SYSTEM ====================
+        function login(username, password, role) {
+            const user = users[username];
+            if (!user || user.password !== password || user.role !== role) {
+                return { success: false, message: "Sai tên đăng nhập, mật khẩu hoặc vai trò không phù hợp!" };
+            }
+            return { success: true, user: { username, name: user.name, role: user.role } };
+        }
+
+        window.loginForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+            const role = document.getElementById("role").value;
+            
+            const result = login(username, password, role);
+            
+            if (result.success) {
+                currentUser = result.user;
+                document.getElementById("loginPage").style.display = "none";
+                document.getElementById("mainApp").style.display = "block";
+                document.getElementById("currentUserName").innerText = currentUser.name;
+                
+                // Load modules based on role
+                const container = document.getElementById("dynamicModules");
+                if (currentUser.role === "patient") {
+                    container.innerHTML = renderPatientModules();
+                    attachPatientEvents();
+                } else if (currentUser.role === "doctor") {
+                    container.innerHTML = "<div class='card'><div class='card-header'>👨‍⚕️ Chào bác sĩ</div><div class='card-body'>Tính năng dành cho bác sĩ đang phát triển. Vui lòng đăng nhập với vai trò bệnh nhân để trải nghiệm đầy đủ chức năng.</div></div>";
+                } else {
+                    container.innerHTML = "<div class='card'><div class='card-header'>📊 Quản lý hệ thống</div><div class='card-body'>Tính năng quản lý đang phát triển. Vui lòng đăng nhập với vai trò bệnh nhân để trải nghiệm đầy đủ chức năng.</div></div>";
+                }
+            } else {
+                document.getElementById("loginError").innerText = result.message;
+            }
+        });
+
+        window.logout = function() {
+            currentUser = null;
+            document.getElementById("loginPage").style.display = "flex";
+            document.getElementById("mainApp").style.display = "none";
+            document.getElementById("loginForm").reset();
+            document.getElementById("loginError").innerText = "";
+        };
+    </script>
+</body>
+</html>
