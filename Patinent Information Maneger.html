@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthCare Plus - Hệ thống đặt lịch khám bệnh trực tuyến</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e6f0fa 0%, #f4f9ff 100%);
+            min-height: 100vh;
+        }
+
+        /* Login Container */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a5f7a 0%, #0e4b62 100%);
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 32px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-card h2 {
+            font-size: 1.8rem;
+            color: #1a5f7a;
+            margin-bottom: 8px;
+        }
+
+        .login-card .subtitle {
+            color: #718096;
+            margin-bottom: 28px;
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e0;
+            border-radius: 16px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #1a5f7a;
+            box-shadow: 0 0 0 3px rgba(26,95,122,0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: #1a5f7a;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 12px;
+        }
+
+        .btn-login:hover {
+            background: #0e4b62;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .demo-info {
+            margin-top: 24px;
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            color: #4a5568;
+        }
+
+        /* Main App (hidden until login) */
+        .main-app {
+            display: none;
+        }
+
+        /* Header & Navigation */
+        .header {
+            background: linear-gradient(135deg, #1a5f7a 0%, #0e4b62 100%);
+            color: white;
+            padding: 0 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            flex-wrap: wrap;
+        }
+
+        .logo h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .logo p {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 20px;
+            border-radius: 40px;
+        }
+
+        .user-name {
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.35);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 30px;
+        }
+
+        /* Tabs Navigation */
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: 0.2s;
+            color: #4a5568;
+        }
+
+        .tab-btn.active {
+            background: #1a5f7a;
+            color: white;
+            box-shadow: 0 4px 12px rgba(26,95,122,0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #e2e8f0;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards & Forms */
+        .search-section {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 6px;
+        }
+
+        .filter-group select, .filter-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none;
+            border-color: #1a5f7a;
+            box-shadow: 0 0 0 3px rgba(26,95,122,0.1);
+        }
+
+        .btn-primary {
+            background: #1a5f7a;
+            color: white;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #0e4b62;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #2d3748;
+            border: 1px solid #cbd5e0;
+            padding: 8px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .doctor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .doctor-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: 0.2s;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+            border-color: #1a5f7a;
+        }
+
+        .doctor-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1a5f7a;
+        }
+
+        .doctor-specialty {
+            color: #718096;
+            margin: 5px 0;
+        }
+
+        .doctor-fee {
+            font-weight: 700;
+            color: #2d6a4f;
+            margin: 8px 0;
+        }
+
+        .doctor-rating {
+            color: #fbbf24;
+        }
+
+        .booking-form {
+            background: white;
+            border-radius: 24px;
+            padding: 28px;
+            margin-top: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+            color: #2d3748;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 10px;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #10b981;
+        }
+
+        .appointment-list {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        .appointment-item {
+            padding: 18px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .payment-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .unpaid {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .cancel-btn {
+            background: #fee2e2;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            color: #991b1b;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .cancel-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pay-btn {
+            background: #1a5f7a;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .reminder-card {
+            background: linear-gradient(135deg, #fef9e3 0%, #fff6e6 100%);
+            border-left: 4px solid #f59e0b;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 28px;
+            border-radius: 28px;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 0 16px;
+            }
+            .nav-container {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen" class="login-container">
+    <div class="login-card">
+        <h2>🏥 HealthCare Plus</h2>
+        <p class="subtitle">Đăng nhập để đặt lịch khám bệnh</p>
+        
+        <div id="loginError" class="error-message" style="display: none;"></div>
+        
+        <div class="input-group">
+            <label>Tên đăng nhập</label>
+            <input type="text" id="loginUsername" placeholder="Nhập tên đăng nhập" value="patient01">
+        </div>
+        
+        <div class="input-group">
+            <label>Mật khẩu</label>
+            <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" value="correct123">
+        </div>
+        
+        <div class="input-group">
+            <label>Vai trò</label>
+            <select id="loginRole">
+                <option value="patient" selected>Bệnh nhân (Patient)</option>
+                <option value="doctor">Bác sĩ (Doctor)</option>
+                <option value="admin">Quản trị viên (Admin)</option>
+            </select>
+        </div>
+        
+        <button class="btn-login" onclick="handleLogin()">Đăng nhập</button>
+        
+        <div class="demo-info">
+            <strong>📋 Thông tin đăng nhập mẫu:</strong><br>
+            • Tài khoản: patient01 / Mật khẩu: correct123 (Bệnh nhân)<br>
+            • Tài khoản: patient02 / Mật khẩu: correct123 (Bệnh nhân)<br>
+            <span style="font-size:0.7rem; color:#1a5f7a;">✅ Test case TC-LOGIN-01: Đăng nhập thành công</span><br>
+            <span style="font-size:0.7rem; color:#991b1b;">❌ Test case TC-LOGIN-02: Sai mật khẩu sẽ báo lỗi</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Application (hidden after login) -->
+<div id="mainApp" class="main-app">
+    <div class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <h2>🏥 HealthCare Plus</h2>
+                <p>Đặt lịch khám bệnh trực tuyến</p>
+            </div>
+            <div class="user-info" id="userInfo">
+                <span>👋</span>
+                <span class="user-name" id="displayUserName">Nguyễn Văn A</span>
+                <button class="logout-btn" onclick="handleLogout()">Đăng xuất</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('search')">🔍 Tìm bác sĩ & Đặt lịch</button>
+            <button class="tab-btn" onclick="switchTab('appointments')">📅 Lịch hẹn của tôi</button>
+            <button class="tab-btn" onclick="switchTab('medical')">📋 Hồ sơ bệnh án</button>
+        </div>
+
+        <!-- Tab 1: Tìm kiếm và đặt lịch -->
+        <div id="searchTab" class="tab-content active">
+            <div class="search-section">
+                <h3 style="margin-bottom: 20px;">🔎 Tìm bác sĩ phù hợp</h3>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Chuyên khoa</label>
+                        <select id="specialtyFilter">
+                            <option value="">Tất cả chuyên khoa</option>
+                            <option value="Tim mạch">Tim mạch</option>
+                            <option value="Nhi khoa">Nhi khoa</option>
+                            <option value="Da liễu">Da liễu</option>
+                            <option value="Thần kinh">Thần kinh</option>
+                            <option value="Tai Mũi Họng">Tai Mũi Họng</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Phí khám tối đa (VNĐ)</label>
+                        <input type="number" id="maxFee" placeholder="Nhập số tiền" value="500000">
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn-primary" onclick="searchDoctors()">Tìm kiếm</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="doctorListContainer" class="doctor-grid">
+                <!-- Danh sách bác sĩ sẽ hiển thị ở đây -->
+            </div>
+
+            <div id="bookingFormContainer" style="display: none;"></div>
+        </div>
+
+        <!-- Tab 2: Lịch hẹn -->
+        <div id="appointmentsTab" class="tab-content">
+            <div id="reminderMessage" class="reminder-card" style="display: none;"></div>
+            <div class="appointment-list" id="appointmentList"></div>
+        </div>
+
+        <!-- Tab 3: Hồ sơ bệnh án -->
+        <div id="medicalTab" class="tab-content">
+            <div class="search-section">
+                <h3>📄 Lịch sử khám bệnh</h3>
+                <div id="medicalHistoryContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thông báo -->
+<div id="notificationModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalMessage"></h3>
+        <button class="btn-primary" style="margin-top: 20px;" onclick="closeModal()">Đóng</button>
+    </div>
+</div>
+
+<script>
+    // ==================== DATA MOCK ====================
+    let currentUser = null;
+    
+    // Danh sách người dùng hợp lệ (cho US-001)
+    const validUsers = [
+        { username: "patient01", password: "correct123", role: "patient", name: "Nguyễn Văn A", id: "P001" },
+        { username: "patient02", password: "correct123", role: "patient", name: "Trần Thị B", id: "P002" },
+        { username: "patient03", password: "correct123", role: "patient", name: "Lê Văn C", id: "P003" }
+    ];
+
+    let doctors = [
+        { id: "DR001", name: "BS. Trần Minh Đức", specialty: "Tim mạch", fee: 350000, rating: 4.8, schedule: "Thứ 2-6, 8h-17h" },
+        { id: "DR002", name: "BS. Lê Thị Hương", specialty: "Nhi khoa", fee: 300000, rating: 4.9, schedule: "Thứ 3-7, 8h-16h" },
+        { id: "DR003", name: "BS. Phạm Văn Thành", specialty: "Da liễu", fee: 450000, rating: 4.7, schedule: "Thứ 2-5, 9h-18h" },
+        { id: "DR004", name: "BS. Nguyễn Thị Lan", specialty: "Tim mạch", fee: 500000, rating: 4.9, schedule: "Thứ 2-6, 7h-15h" },
+        { id: "DR005", name: "BS. Hoàng Văn Nam", specialty: "Thần kinh", fee: 400000, rating: 4.6, schedule: "Thứ 3-7, 8h-17h" },
+        { id: "DR006", name: "BS. Vũ Thị Mai", specialty: "Tai Mũi Họng", fee: 280000, rating: 4.8, schedule: "Thứ 2-6, 8h-16h" }
+    ];
+
+    let appointments = [
+        { id: "APT-001", doctorId: "DR001", doctorName: "BS. Trần Minh Đức", specialty: "Tim mạch", date: "2026-03-29", time: "9:00", fee: 350000, paymentStatus: "paid", status: "confirmed", patientId: "P001" },
+        { id: "APT-002", doctorId: "DR003", doctorName: "BS. Phạm Văn Thành", specialty: "Da liễu", date: "2026-04-05", time: "14:00", fee: 450000, paymentStatus: "unpaid", status: "confirmed", patientId: "P001" }
+    ];
+
+    let medicalHistory = {
+        diagnoses: [
+            { date: "2026-02-15", diagnosis: "Cảm cúm thông thường", doctor: "BS. Lê Thị Hương" },
+            { date: "2026-03-10", diagnosis: "Viêm họng cấp", doctor: "BS. Vũ Thị Mai" }
+        ],
+        prescriptions: [
+            { date: "2026-02-15", medication: "Paracetamol 500mg", instruction: "Ngày 2 lần sau ăn, uống 5 ngày" },
+            { date: "2026-03-10", medication: "Amoxicillin 250mg", instruction: "Ngày 3 lần, uống 7 ngày" }
+        ],
+        testResults: [
+            { date: "2026-02-16", test: "Xét nghiệm máu", result: "Bạch cầu tăng nhẹ, chỉ số khác bình thường" }
+        ],
+        medicalImages: [
+            { date: "2026-03-12", type: "X-quang ngực", url: "#" }
+        ]
+    };
+
+    // ==================== LOGIN FUNCTIONS (US-001, US-002) ====================
+    function handleLogin() {
+        const username = document.getElementById("loginUsername").value.trim();
+        const password = document.getElementById("loginPassword").value;
+        const role = document.getElementById("loginRole").value;
+        
+        const errorDiv = document.getElementById("loginError");
+        
+        // TC-LOGIN-02: Kiểm tra sai mật khẩu
+        const user = validUsers.find(u => u.username === username && u.password === password && u.role === role);
+        
+        if (!user) {
+            // Đăng nhập thất bại - Test case TC-LOGIN-02
+            errorDiv.style.display = "block";
+            errorDiv.innerHTML = "❌ Sai tên đăng nhập hoặc mật khẩu. Vui lòng thử lại.";
+            return;
+        }
+        
+        // Đăng nhập thành công - Test case TC-LOGIN-01
+        currentUser = user;
+        
+        // Hiển thị main app, ẩn login screen
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("mainApp").style.display = "block";
+        
+        // US-003: Hiển thị tên người dùng
+        document.getElementById("displayUserName").innerText = currentUser.name;
+        
+        // Khởi tạo dữ liệu cho user hiện tại (lọc appointments theo patient)
+        loadUserData();
+        
+        // Khởi tạo các tab
+        searchDoctors();
+        loadAppointments();
+        checkReminder();
+        loadMedicalHistory();
+        
+        showModal(`✅ Đăng nhập thành công! Chào mừng ${currentUser.name}`);
+    }
+    
+    function loadUserData() {
+        // Lọc appointments theo patient hiện tại
+        window.userAppointments = appointments.filter(apt => apt.patientId === currentUser.id);
+    }
+    
+    function handleLogout() {
+        if (confirm("Bạn có chắc muốn đăng xuất?")) {
+            currentUser = null;
+            document.getElementById("loginScreen").style.display = "flex";
+            document.getElementById("mainApp").style.display = "none";
+            showModal("Đã đăng xuất thành công.");
+        }
+    }
+    
+    function showModal(message) {
+        document.getElementById("modalMessage").innerText = message;
+        document.getElementById("notificationModal").style.display = "flex";
+    }
+    
+    function closeModal() {
+        document.getElementById("notificationModal").style.display = "none";
+    }
+    
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`${tabName}Tab`).classList.add('active');
+        if (tabName === 'search') {
+            searchDoctors();
+        } else if (tabName === 'appointments') {
+            loadAppointments();
+            checkReminder();
+        } else if (tabName === 'medical') {
+            loadMedicalHistory();
+        }
+    }
+    
+    // US-004, US-005: Tìm kiếm theo chuyên khoa và lọc theo phí
+    function searchDoctors() {
+        let specialty = document.getElementById("specialtyFilter").value;
+        let maxFee = parseInt(document.getElementById("maxFee").value) || 9999999;
+        
+        let filtered = doctors.filter(doc => {
+            let matchSpecialty = !specialty || doc.specialty === specialty;
+            let matchFee = doc.fee <= maxFee;
+            return matchSpecialty && matchFee;
+        });
+        
+        displayDoctors(filtered);
+    }
+    
+    function displayDoctors(doctorList) {
+        const container = document.getElementById("doctorListContainer");
+        if (doctorList.length === 0) {
+            container.innerHTML = "<div style='text-align:center; padding:40px; background:white; border-radius:20px;'>Không tìm thấy bác sĩ phù hợp.</div>";
+            return;
+        }
+        container.innerHTML = doctorList.map(doc => `
+            <div class="doctor-card" onclick="selectDoctorForBooking('${doc.id}', '${doc.name}', '${doc.specialty}', ${doc.fee})">
+                <div class="doctor-name">${doc.name}</div>
+                <div class="doctor-specialty">🏥 ${doc.specialty}</div>
+                <div class="doctor-fee">💰 Phí khám: ${doc.fee.toLocaleString()} VNĐ</div>
+                <div class="doctor-rating">⭐ ${doc.rating} / 5</div>
+                <div>📅 ${doc.schedule}</div>
+                <button class="btn-primary" style="margin-top: 12px; width:100%">Đặt lịch ngay</button>
+            </div>
+        `).join('');
+    }
+    
+    let selectedDoctor = null;
+    function selectDoctorForBooking(id, name, specialty, fee) {
+        selectedDoctor = { id, name, specialty, fee };
+        const bookingHtml = `
+            <div class="booking-form">
+                <h3>📝 Đặt lịch với ${name}</h3>
+                <p>Chuyên khoa: ${specialty} | Phí khám: ${fee.toLocaleString()} VNĐ</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ngày khám *</label>
+                        <input type="date" id="appointmentDate" min="${new Date().toISOString().split('T')[0]}">
+                    </div>
+                    <div class="form-group">
+                        <label>Giờ khám</label>
+                        <select id="appointmentTime">
+                            <option value="8:00">8:00</option>
+                            <option value="9:00">9:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="confirmBooking()">✅ Xác nhận đặt lịch</button>
+                <button class="btn-secondary" onclick="cancelBooking()">Hủy</button>
+            </div>
+        `;
+        document.getElementById("bookingFormContainer").style.display = "block";
+        document.getElementById("bookingFormContainer").innerHTML = bookingHtml;
+        document.getElementById("bookingFormContainer").scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function cancelBooking() {
+        document.getElementById("bookingFormContainer").style.display = "none";
+        selectedDoctor = null;
+    }
+    
+    // US-007, US-008, US-009, US-010: Xác nhận đặt lịch
+    function confirmBooking() {
+        if (!selectedDoctor) return;
+        let date = document.getElementById("appointmentDate").value;
+        let time = document.getElementById("appointmentTime").value;
+        if (!date) {
+            showModal("Vui lòng chọn ngày khám");
+            return;
+        }
+        let today = new Date().toISOString().split('T')[0];
+        if (date < today) {
+            showModal("Ngày khám phải từ hôm nay trở đi");
+            return;
+        }
+        
+        let newAppointment = {
+            id: "APT-" + (appointments.length + 101),
+            doctorId: selectedDoctor.id,
+            doctorName: selectedDoctor.name,
+            specialty: selectedDoctor.specialty,
+            date: date,
+            time: time,
+            fee: selectedDoctor.fee,
+            paymentStatus: "unpaid",
+            status: "confirmed",
+            patientId: currentUser.id
+        };
+        appointments.push(newAppointment);
+        window.userAppointments = appointments.filter(apt => apt.patientId === currentUser.id);
+        
+        // US-010: Hiển thị mã đặt lịch
+        showModal(`✅ Đặt lịch thành công! Mã hẹn: ${newAppointment.id}\nBác sĩ: ${selectedDoctor.name}\nNgày: ${date} ${time}`);
+        
+        document.getElementById("bookingFormContainer").style.display = "none";
+        selectedDoctor = null;
+        searchDoctors();
+    }
+    
+    // US-011, US-012, US-019, US-020: Hiển thị danh sách lịch hẹn
+    function loadAppointments() {
+        const container = document.getElementById("appointmentList");
+        const userApps = window.userAppointments || [];
+        if (userApps.length === 0) {
+            container.innerHTML = "<div style='padding:40px; text-align:center'>Bạn chưa có lịch hẹn nào.</div>";
+            return;
+        }
+        container.innerHTML = userApps.map(apt => `
+            <div class="appointment-item">
+                <div>
+                    <strong>${apt.doctorName}</strong> - ${apt.specialty}<br>
+                    📅 ${apt.date} | ⏰ ${apt.time} | 💰 ${apt.fee.toLocaleString()} VNĐ<br>
+                    <small>Mã hẹn: ${apt.id}</small>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <span class="payment-badge ${apt.paymentStatus === 'paid' ? 'paid' : 'unpaid'}">
+                        ${apt.paymentStatus === 'paid' ? '✅ Đã thanh toán' : '⏳ Chưa thanh toán'}
+                    </span>
+                    ${apt.paymentStatus === 'unpaid' ? `
+                        <button class="pay-btn" onclick="payWithEWallet('${apt.id}')">💳 Thanh toán</button>
+                        <button class="cancel-btn" onclick="cancelAppointment('${apt.id}')">Hủy lịch</button>
+                    ` : `
+                        <button class="cancel-btn" disabled style="opacity:0.5">🔒 Đã thanh toán</button>
+                    `}
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // US-012: Hủy lịch chưa thanh toán
+    function cancelAppointment(appointmentId) {
+        let appointment = appointments.find(a => a.id === appointmentId);
+        if (appointment && appointment.paymentStatus === 'unpaid') {
+            if (confirm("Bạn có chắc muốn hủy lịch hẹn này?")) {
+                appointments = appointments.filter(a => a.id !== appointmentId);
+                window.userAppointments = appointments.filter(apt => apt.patientId === currentUser.id);
+                loadAppointments();
+                showModal("Đã hủy lịch hẹn thành công.");
+            }
+        } else {
+            showModal("Không thể hủy lịch đã thanh toán.");
+        }
+    }
+    
+    // US-019: Thanh toán ví điện tử
+    function payWithEWallet(appointmentId) {
+        let appointment = appointments.find(a => a.id === appointmentId);
+        if (appointment && appointment.paymentStatus === 'unpaid') {
+            appointment.paymentStatus = 'paid';
+            window.userAppointments = appointments.filter(apt => apt.patientId === currentUser.id);
+            loadAppointments();
+            showModal(`💰 Thanh toán thành công ${appointment.fee.toLocaleString()} VNĐ qua ví điện tử!`);
+        } else {
+            showModal("Lịch hẹn không hợp lệ hoặc đã thanh toán.");
+        }
+    }
+    
+    // US-018: Kiểm tra nhắc hẹn 24h
+    function checkReminder() {
+        let tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        let tomorrowStr = tomorrow.toISOString().split('T')[0];
+        let upcoming = (window.userAppointments || []).find(apt => apt.date === tomorrowStr);
+        const reminderDiv = document.getElementById("reminderMessage");
+        if (upcoming) {
+            reminderDiv.style.display = "block";
+            reminderDiv.innerHTML = `🔔 <strong>Nhắc hẹn:</strong> Bạn có lịch khám với ${upcoming.doctorName} vào ngày mai lúc ${upcoming.time}. Vui lòng đến đúng giờ!`;
+        } else {
+            reminderDiv.style.display = "none";
+        }
+    }
+    
+    // US-013, 014, 015, 016, 017: Hồ sơ bệnh án
+    function loadMedicalHistory() {
+        const container = document.getElementById("medicalHistoryContent");
+        container.innerHTML = `
+            <div style="margin-bottom:24px;">
+                <h4>📋 Chẩn đoán</h4>
+                ${medicalHistory.diagnoses.map(d => `<p>📅 ${d.date}: ${d.diagnosis} (BS. ${d.doctor})</p>`).join('')}
+            </div>
+            <div style="margin-bottom:24px;">
+                <h4>💊 Đơn thuốc</h4>
+                ${medicalHistory.prescriptions.map(p => `<p>📅 ${p.date}: ${p.medication} - ${p.instruction}</p>`).join('')}
+            </div>
+            <div style="margin-bottom:24px;">
+                <h4>🧪 Kết quả xét nghiệm</h4>
+                ${medicalHistory.testResults.map(t => `<p>📅 ${t.date}: ${t.test} - ${t.result}</p>`).join('')}
+            </div>
+            <div>
+                <h4>🖼️ Hình ảnh y tế</h4>
+                ${medicalHistory.medicalImages.map(img => `<p>📅 ${img.date}: ${img.type} <button class="btn-secondary" onclick="showModal('Hình ảnh y tế sẽ được hiển thị tại đây')">Xem</button></p>`).join('')}
+            </div>
+        `;
+    }
+    
+    // Đóng modal khi click ra ngoài
+    window.onclick = function(event) {
+        let modal = document.getElementById("notificationModal");
+        if (event.target === modal) closeModal();
+    }
+</script>
+</body>
+</html>
